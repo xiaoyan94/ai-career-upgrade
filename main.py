@@ -9,12 +9,28 @@ client = OpenAI(
     base_url="https://api.deepseek.com"
 )
 
-response = client.chat.completions.create(
-    model="deepseek-chat",
-    messages=[
-        {"role": "system", "content": "你是一个专业的技术导师"},
-        {"role": "user", "content": "什么是大语言模型？"}
-    ]
-)
+messages = [
+    {"role": "system", "content": "你是一个专业的汉语言文学专家"}
+]
 
-print(response.choices[0].message.content)
+while True:
+    user_input = input("你: ")
+    
+    if user_input.lower() in ["exit", "quit"]:
+        print("对话结束")
+        break
+
+    messages.append({"role": "user", "content": user_input})
+    
+    response = client.chat.completions.create(
+        model="deepseek-chat",
+        messages=messages
+    )
+
+    reply = response.choices[0].message.content
+    
+    print("AI:", reply)
+    
+    messages.append({"role": "assistant", "content": reply})
+
+    print("Token使用:", response.usage)
