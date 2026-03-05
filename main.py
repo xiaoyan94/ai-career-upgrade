@@ -9,9 +9,25 @@ client = OpenAI(
     base_url="https://api.deepseek.com"
 )
 
+total_tokens = 0
+
+role_input = input("请输入AI角色（例如：Java架构师）：")
+
 messages = [
-    {"role": "system", "content": "你是一个专业的汉语言文学专家"}
+    {"role": "system", "content": "你是一个专业的{role_input}"}
 ]
+
+def trim_messages(messages, max_history=6):
+    """
+    保留最近 max_history 条 user/assistant 对话
+    """
+    system_msg = messages[0]
+    history = messages[1:]
+
+    # 只保留最近几条
+    history = history[-max_history:]
+
+    return [system_msg] + history
 
 while True:
     user_input = input("你: ")
@@ -22,9 +38,11 @@ while True:
 
     messages.append({"role": "user", "content": user_input})
     
+    trimmed = trim_messages(messages)
+
     response = client.chat.completions.create(
         model="deepseek-chat",
-        messages=messages
+        messages=trimmed
     )
 
     reply = response.choices[0].message.content
@@ -34,3 +52,6 @@ while True:
     messages.append({"role": "assistant", "content": reply})
 
     print("Token使用:", response.usage)
+
+    total_tokens += response.usage.total_tokens
+    print("累计Token:", total_tokens)
